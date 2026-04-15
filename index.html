@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 Farmer Database - Login</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Tahoma,sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #0a3d1f 0%, #14694a 50%, #1e8a5a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        /* Logo Area */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .logo-area h1 {
+            color: white;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .logo-area p {
+            color: #a8e6cf;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Login Card */
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #1a5c34, #2d8b5e);
+            padding: 20px 25px;
+            text-align: center;
+        }
+        .card-header h2 { color: white; font-size: 1.3rem; }
+        .card-header p { color: #a8e6cf; font-size: 0.8rem; margin-top: 5px; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+        }
+        .tab {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #888;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab:hover { color: #333; }
+        .tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+            background: white;
+        }
+
+        /* Form */
+        .form-area {
+            padding: 25px;
+        }
+        .form-box { display: none; }
+        .form-box.active { display: block; }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .input-group label .req { color: #f44336; }
+
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper .icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+        }
+        .input-wrapper input {
+            width: 100%;
+            padding: 13px 15px 13px 42px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .input-wrapper input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76,175,80,0.1);
+        }
+        .input-wrapper .toggle-pass {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.1rem;
+            user-select: none;
+        }
+
+        .input-group .hint {
+            font-size: 0.72rem;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="password"],
+        .input-group input[type="tel"] {
+            width: 100%;
+            padding: 13px 15px 13px 42px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .remember-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            font-size: 0.82rem;
+        }
+        .remember-row label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            color: #666;
+        }
+        .remember-row a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-login:hover { transform: translateY(-2px); }
+        .btn-login:active { transform: scale(0.98); }
+
+        .btn-green {
+            background: linear-gradient(135deg, #4CAF50, #388E3C);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+        }
+        .btn-blue {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33,150,243,0.4);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 18px 0;
+            position: relative;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #999;
+            font-size: 0.82rem;
+        }
+
+        /* Error/Success Messages */
+        .msg {
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity:0; transform:translateY(-10px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+        .msg.show { display: block; }
+        .msg-error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+        .msg-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+
+        /* Users List */
+        .registered-count {
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 0 0 20px 20px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .logo-area h1 { font-size: 1.4rem; }
+            .login-container { max-width: 100%; }
+        }
+
+        /* Loading */
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .spinner-sm {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <!-- Logo -->
+    <div class="logo-area">
+        <span class="logo-icon">🌾</span>
+        <h1>Farmer Database</h1>
+        <p>किसान डेटाबेस प्रबंधन प्रणाली</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+        <div class="card-header">
+            <h2>🔐 Welcome Back!</h2>
+            <p>Login or Register to manage your farmer data</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('login')">🔑 Login</div>
+            <div class="tab" onclick="switchTab('register')">📝 Register</div>
+        </div>
+
+        <div class="form-area">
+            <!-- Message -->
+            <div class="msg" id="authMsg"></div>
+
+            <!-- LOGIN FORM -->
+            <div class="form-box active" id="loginForm">
+                <div class="input-group">
+                    <label>📱 Mobile Number <span class="req">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="icon">📱</span>
+                        <input type="tel" id="loginMobile" placeholder="Enter 10-digit mobile" maxlength="10"
+                            oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>🔒 Password <span class="req">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="loginPass" placeholder="Enter password">
+                        <span class="toggle-pass" onclick="togglePass('loginPass',this)">👁️</span>
+                    </div>
+                </div>
+
+                <div class="remember-row">
+                    <label>
+                        <input type="checkbox" id="rememberMe" checked> Remember me
+                    </label>
+                    <a href="#" onclick="forgotPass()">Forgot Password?</a>
+                </div>
+
+                <button class="btn-login btn-green" onclick="login()" id="loginBtn">
+                    🔑 Login
+                </button>
+
+                <div class="divider"><span>New User?</span></div>
+
+                <button class="btn-login btn-blue" onclick="switchTab('register')">
+                    📝 Create New Account
+                </button>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div class="form-box" id="registerForm">
+                <div class="input-group">
+                    <label>👤 Full Name <span class="req">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="icon">👤</span>
+                        <input type="text" id="regName" placeholder="Your full name">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>📱 Mobile Number <span class="req">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="icon">📱</span>
+                        <input type="tel" id="regMobile" placeholder="10-digit mobile" maxlength="10"
+                            oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+                    <div class="hint">This will be your login ID</div>
+                </div>
+
+                <div class="input-group">
+                    <label>🔒 Create Password <span class="req">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="regPass" placeholder="Min 4 characters">
+                        <span class="toggle-pass" onclick="togglePass('regPass',this)">👁️</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>🔒 Confirm Password <span class="req">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="regConfirm" placeholder="Re-enter password">
+                        <span class="toggle-pass" onclick="togglePass('regConfirm',this)">👁️</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>🏢 Organization / Village</label>
+                    <div class="input-wrapper">
+                        <span class="icon">🏢</span>
+                        <input type="text" id="regOrg" placeholder="Optional">
+                    </div>
+                </div>
+
+                <button class="btn-login btn-green" onclick="register()" id="regBtn">
+                    📝 Create Account
+                </button>
+
+                <div class="divider"><span>Already have account?</span></div>
+
+                <button class="btn-login btn-blue" onclick="switchTab('login')">
+                    🔑 Login Here
+                </button>
+            </div>
+        </div>
+
+        <div class="registered-count">
+            👥 Registered Users: <strong id="userCount">0</strong> |
+            🌾 Total Farmers in System: <strong id="farmerCount">0</strong>
+        </div>
+    </div>
+
+    <div class="footer">
+        🌾 Farmer Database Management System v2.0<br>
+        Made with ❤️ for Indian Farmers
+    </div>
+</div>
+
+<script>
+// ============ AUTH SYSTEM ============
+
+// Check if already logged in
+window.onload = function() {
+    const session = localStorage.getItem('currentUser');
+    if (session) {
+        window.location.href = 'home.html';
+        return;
+    }
+    updateCounts();
+
+    // Auto-fill remembered credentials
+    const remembered = localStorage.getItem('rememberedUser');
+    if (remembered) {
+        const data = JSON.parse(remembered);
+        document.getElementById('loginMobile').value = data.mobile || '';
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm.classList.contains('active')) {
+                login();
+            } else {
+                register();
+            }
+        }
+    });
+};
+
+// Switch Tabs
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.form-box').forEach(f => f.classList.remove('active'));
+    hideMsg();
+
+    if (tab === 'login') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+    } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+    }
+}
+
+// Toggle Password Visibility
+function togglePass(id, el) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        el.textContent = '🙈';
+    } else {
+        inp.type = 'password';
+        el.textContent = '👁️';
+    }
+}
+
+// Show Message
+function showMsg(text, type) {
+    const msg = document.getElementById('authMsg');
+    msg.textContent = text;
+    msg.className = 'msg show msg-' + type;
+    setTimeout(() => hideMsg(), 5000);
+}
+
+function hideMsg() {
+    document.getElementById('authMsg').className = 'msg';
+}
+
+// Get all users
+function getUsers() {
+    return JSON.parse(localStorage.getItem('allUsers') || '{}');
+}
+
+// Save all users
+function saveUsers(users) {
+    localStorage.setItem('allUsers', JSON.stringify(users));
+}
+
+// Update counts
+function updateCounts() {
+    const users = getUsers();
+    const userCount = Object.keys(users).length;
+    let farmerCount = 0;
+    Object.keys(users).forEach(key => {
+        const userData = JSON.parse(localStorage.getItem('farmers_' + key) || '[]');
+        farmerCount += userData.length;
+    });
+    document.getElementById('userCount').textContent = userCount;
+    document.getElementById('farmerCount').textContent = farmerCount;
+}
+
+// ============ REGISTER ============
+function register() {
+    const name = document.getElementById('regName').value.trim();
+    const mobile = document.getElementById('regMobile').value.trim();
+    const pass = document.getElementById('regPass').value;
+    const confirm = document.getElementById('regConfirm').value;
+    const org = document.getElementById('regOrg').value.trim();
+
+    // Validations
+    if (!name) { showMsg('❌ Name required!', 'error'); return; }
+    if (!mobile || mobile.length !== 10) { showMsg('❌ Valid 10-digit mobile required!', 'error'); return; }
+    if (!pass || pass.length < 4) { showMsg('❌ Password min 4 characters!', 'error'); return; }
+    if (pass !== confirm) { showMsg('❌ Passwords do not match!', 'error'); return; }
+
+    const users = getUsers();
+
+    // Check if mobile already registered
+    if (users[mobile]) {
+        showMsg('❌ This mobile number is already registered! Please login.', 'error');
+        return;
+    }
+
+    // Register user
+    users[mobile] = {
+        name: name,
+        mobile: mobile,
+        password: btoa(pass), // Simple encoding
+        org: org,
+        createdAt: new Date().toLocaleString('en-IN'),
+        lastLogin: ''
+    };
+
+    saveUsers(users);
+
+    // Create empty farmer data for this user
+    localStorage.setItem('farmers_' + mobile, JSON.stringify([]));
+
+    showMsg('✅ Account created successfully! Please login.', 'success');
+    updateCounts();
+
+    // Switch to login
+    setTimeout(() => {
+        switchTab('login');
+        document.getElementById('loginMobile').value = mobile;
+        document.getElementById('loginPass').focus();
+    }, 1500);
+
+    // Clear register form
+    document.getElementById('regName').value = '';
+    document.getElementById('regMobile').value = '';
+    document.getElementById('regPass').value = '';
+    document.getElementById('regConfirm').value = '';
+    document.getElementById('regOrg').value = '';
+}
+
+// ============ LOGIN ============
+function login() {
+    const mobile = document.getElementById('loginMobile').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const remember = document.getElementById('rememberMe').checked;
+
+    // Validations
+    if (!mobile || mobile.length !== 10) { showMsg('❌ Valid 10-digit mobile required!', 'error'); return; }
+    if (!pass) { showMsg('❌ Password required!', 'error'); return; }
+
+    const users = getUsers();
+
+    // Check user exists
+    if (!users[mobile]) {
+        showMsg('❌ Mobile number not registered! Please create account first.', 'error');
+        return;
+    }
+
+    // Check password
+    if (atob(users[mobile].password) !== pass) {
+        showMsg('❌ Wrong password! Please try again.', 'error');
+        return;
+    }
+
+    // Login success
+    users[mobile].lastLogin = new Date().toLocaleString('en-IN');
+    saveUsers(users);
+
+    // Save session
+    const session = {
+        mobile: mobile,
+        name: users[mobile].name,
+        org: users[mobile].org,
+        loginTime: new Date().toLocaleString('en-IN')
+    };
+    localStorage.setItem('currentUser', JSON.stringify(session));
+
+    // Remember me
+    if (remember) {
+        localStorage.setItem('rememberedUser', JSON.stringify({ mobile: mobile }));
+    } else {
+        localStorage.removeItem('rememberedUser');
+    }
+
+    // Show success
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<div class="spinner-sm"></div> Logging in...';
+    btn.classList.add('btn-loading');
+
+    showMsg('✅ Login successful! Redirecting...', 'success');
+
+    setTimeout(() => {
+        window.location.href = 'home.html';
+    }, 1200);
+}
+
+// ============ FORGOT PASSWORD ============
+function forgotPass() {
+    const mobile = prompt('Enter your registered mobile number:');
+    if (!mobile || mobile.length !== 10) {
+        alert('❌ Enter valid 10-digit mobile number!');
+        return;
+    }
+
+    const users = getUsers();
+    if (!users[mobile]) {
+        alert('❌ This mobile number is not registered!');
+        return;
+    }
+
+    const newPass = prompt('Enter new password (min 4 characters):');
+    if (!newPass || newPass.length < 4) {
+        alert('❌ Password must be at least 4 characters!');
+        return;
+    }
+
+    users[mobile].password = btoa(newPass);
+    saveUsers(users);
+    alert('✅ Password reset successfully! Now login with new password.');
+}
+</script>
+
+</body>
+</html>
