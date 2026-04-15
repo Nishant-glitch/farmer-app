@@ -3,646 +3,820 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌾 Farmer Database - Login</title>
+    <title>🌾 Farmer Database</title>
 
-    <!-- Firebase CDN -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
-        body{
-            background:linear-gradient(135deg,#0a3d1f 0%,#14694a 50%,#1e8a5a 100%);
-            min-height:100vh;display:flex;justify-content:center;align-items:center;padding:15px;
-        }
-        .container{width:100%;max-width:440px}
+        body{background:linear-gradient(135deg,#0a3d1f,#14694a,#1e8a5a);min-height:100vh}
 
-        /* Logo */
-        .logo{text-align:center;margin-bottom:25px}
-        .logo-icon{font-size:3.5rem;display:block;margin-bottom:8px;animation:bounce 2s infinite}
+        /* LOGIN */
+        #loginPage{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:15px}
+        #homePage{display:none;padding:10px}
+        .lbox{width:100%;max-width:420px}
+        .logo{text-align:center;margin-bottom:22px}
+        .logo span{font-size:3.5rem;display:block;animation:bounce 2s infinite}
         @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-        .logo h1{color:white;font-size:1.7rem;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
-        .logo p{color:#a8e6cf;font-size:0.85rem;margin-top:4px}
-
-        /* Card */
-        .card{background:white;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;animation:slideUp 0.5s ease}
-        @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-
-        .card-head{background:linear-gradient(135deg,#1a5c34,#2d8b5e);padding:18px 22px;text-align:center}
-        .card-head h2{color:white;font-size:1.2rem}
-        .card-head p{color:#a8e6cf;font-size:0.78rem;margin-top:4px}
-
-        /* Connection Status */
-        .conn-status{text-align:center;padding:8px;font-size:0.75rem;font-weight:600}
-        .conn-online{background:#e8f5e9;color:#2e7d32}
-        .conn-offline{background:#ffebee;color:#c62828}
-        .conn-loading{background:#fff3e0;color:#e65100}
-
-        /* Tabs */
+        .logo h1{color:white;font-size:1.6rem;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
+        .logo p{color:#a8e6cf;font-size:0.82rem;margin-top:4px}
+        .crd{background:white;border-radius:18px;box-shadow:0 18px 55px rgba(0,0,0,0.3);overflow:hidden;animation:sUp .4s ease}
+        @keyframes sUp{from{transform:translateY(35px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .ch{background:linear-gradient(135deg,#1a5c34,#2d8b5e);padding:16px 20px;text-align:center}
+        .ch h2{color:white;font-size:1.15rem}.ch p{color:#a8e6cf;font-size:.75rem;margin-top:3px}
+        .conn{text-align:center;padding:7px;font-size:.72rem;font-weight:600}
+        .c-on{background:#e8f5e9;color:#2e7d32}.c-off{background:#ffebee;color:#c62828}.c-wait{background:#fff3e0;color:#e65100}
         .tabs{display:flex;background:#f5f5f5}
-        .tab{flex:1;padding:13px;text-align:center;cursor:pointer;font-weight:600;font-size:0.88rem;color:#888;border-bottom:3px solid transparent;transition:all 0.3s}
-        .tab:hover{color:#333}
-        .tab.active{color:#4CAF50;border-bottom-color:#4CAF50;background:white}
-
-        /* Form */
-        .form-area{padding:22px}
-        .form-box{display:none}
-        .form-box.active{display:block}
-
-        .ig{margin-bottom:16px}
-        .ig label{display:block;font-size:0.82rem;color:#555;margin-bottom:5px;font-weight:600}
-        .ig label .rq{color:#f44336}
+        .tab{flex:1;padding:12px;text-align:center;cursor:pointer;font-weight:600;font-size:.85rem;color:#888;border-bottom:3px solid transparent;transition:.3s}
+        .tab:hover{color:#333}.tab.on{color:#4CAF50;border-bottom-color:#4CAF50;background:white}
+        .fa{padding:20px}
+        .fb{display:none}.fb.on{display:block}
+        .ig{margin-bottom:14px}
+        .ig label{display:block;font-size:.78rem;color:#555;margin-bottom:4px;font-weight:600}
+        .ig .rq{color:#f44336}
         .iw{position:relative}
-        .iw .ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:1rem}
-        .iw input{
-            width:100%;padding:12px 14px 12px 40px;border:2px solid #e0e0e0;
-            border-radius:12px;font-size:0.92rem;outline:none;transition:all 0.3s;
-        }
-        .iw input:focus{border-color:#4CAF50;box-shadow:0 0 0 3px rgba(76,175,80,0.1)}
-        .iw .tp{position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1rem;user-select:none}
-        .ig .hint{font-size:0.7rem;color:#999;margin-top:3px}
-
-        .rem-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:0.8rem}
-        .rem-row label{display:flex;align-items:center;gap:5px;cursor:pointer;color:#666}
-        .rem-row a{color:#4CAF50;text-decoration:none;font-weight:600}
-        .rem-row a:hover{text-decoration:underline}
-
-        .btn-auth{
-            width:100%;padding:13px;border:none;border-radius:12px;font-size:0.95rem;
-            font-weight:700;cursor:pointer;transition:all 0.3s;display:flex;
-            align-items:center;justify-content:center;gap:7px;
-        }
-        .btn-auth:hover{transform:translateY(-2px)}
-        .btn-auth:active{transform:scale(0.98)}
-        .btn-green{background:linear-gradient(135deg,#4CAF50,#388E3C);color:white;box-shadow:0 4px 15px rgba(76,175,80,0.4)}
-        .btn-blue{background:linear-gradient(135deg,#2196F3,#1976D2);color:white;box-shadow:0 4px 15px rgba(33,150,243,0.4)}
-        .btn-loading{pointer-events:none;opacity:0.7}
-
-        .divider{text-align:center;margin:16px 0;position:relative}
-        .divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:#e0e0e0}
-        .divider span{background:white;padding:0 14px;position:relative;color:#999;font-size:0.8rem}
-
-        /* Message */
-        .msg{padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:0.83rem;font-weight:600;display:none;animation:fadeIn 0.3s ease}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-        .msg.show{display:block}
-        .msg-error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a}
-        .msg-success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
-        .msg-info{background:#e3f2fd;color:#1565C0;border:1px solid #90caf9}
-
-        /* Footer */
-        .footer-info{text-align:center;padding:12px;background:#f8f9fa;border-radius:0 0 20px 20px;font-size:0.78rem;color:#888}
-        .app-footer{text-align:center;margin-top:18px;color:rgba(255,255,255,0.5);font-size:0.72rem}
-
-        /* Spinner */
-        .spinner-sm{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid white;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+        .iw .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1rem}
+        .iw input{width:100%;padding:11px 13px 11px 38px;border:2px solid #e0e0e0;border-radius:11px;font-size:.9rem;outline:none;transition:.3s}
+        .iw input:focus{border-color:#4CAF50;box-shadow:0 0 0 3px rgba(76,175,80,.1)}
+        .iw .tp{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1rem;user-select:none}
+        .ig .ht{font-size:.68rem;color:#999;margin-top:3px}
+        .rem{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:.78rem}
+        .rem label{display:flex;align-items:center;gap:4px;cursor:pointer;color:#666}
+        .rem a{color:#4CAF50;text-decoration:none;font-weight:600}
+        .ba2{width:100%;padding:12px;border:none;border-radius:11px;font-size:.92rem;font-weight:700;cursor:pointer;transition:.3s;display:flex;align-items:center;justify-content:center;gap:6px}
+        .ba2:hover{transform:translateY(-2px)}.ba2:active{transform:scale(.98)}
+        .bgr{background:linear-gradient(135deg,#4CAF50,#388E3C);color:white;box-shadow:0 3px 12px rgba(76,175,80,.4)}
+        .bbl{background:linear-gradient(135deg,#2196F3,#1976D2);color:white;box-shadow:0 3px 12px rgba(33,150,243,.4)}
+        .bld{pointer-events:none;opacity:.7}
+        .dv{text-align:center;margin:14px 0;position:relative}
+        .dv::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:#e0e0e0}
+        .dv span{background:white;padding:0 12px;position:relative;color:#999;font-size:.78rem}
+        .msg{padding:9px 13px;border-radius:9px;margin-bottom:12px;font-size:.8rem;font-weight:600;display:none;animation:fIn .3s}
+        @keyframes fIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+        .msg.show{display:block}.msg-e{background:#ffebee;color:#c62828;border:1px solid #ef9a9a}.msg-s{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+        .cft{text-align:center;padding:10px;background:#f8f9fa;font-size:.72rem;color:#888}
+        .spn{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top:2px solid white;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
         @keyframes spin{to{transform:rotate(360deg)}}
 
-        @media(max-width:480px){.logo h1{font-size:1.3rem}.container{max-width:100%}}
+        /* HOME */
+        .tb2{background:rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(10px);flex-wrap:wrap;gap:6px}
+        .tb2 h1{color:#fff;font-size:1.15rem}.tb2 p{color:#a8e6cf;font-size:.68rem}
+        .tr2{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+        .ui2{background:rgba(255,255,255,.15);padding:5px 12px;border-radius:20px;color:white;font-size:.75rem;cursor:pointer}
+        .ui2 strong{color:#a8e6cf}
+        .sb2{padding:4px 12px;border-radius:15px;font-size:.66rem;font-weight:700}
+        .sb-on{background:#4CAF50;color:white}.sb-off{background:#FF9800;color:white}
+        .bo2{padding:5px 12px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:white;border-radius:20px;cursor:pointer;font-weight:600;font-size:.75rem}
+        .bo2:hover{background:rgba(255,255,255,.2)}
+        .sts{display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+        .sc{flex:1;min-width:100px;background:rgba(255,255,255,.95);border-radius:10px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .sc .n{font-size:1.3rem;font-weight:bold;color:#0a3d1f}.sc .l{color:#666;font-size:.65rem;margin-top:2px}
+        .sc.c1{border-top:3px solid #2196F3}.sc.c2{border-top:3px solid #4CAF50}.sc.c3{border-top:3px solid #f44336}.sc.c4{border-top:3px solid #FF9800}
+        .ct{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+        .sb{display:flex;gap:5px;flex-wrap:wrap}
+        .sb input,.sb select{padding:8px 12px;border:2px solid #ddd;border-radius:20px;font-size:.8rem;outline:none;background:white}
+        .sb input:focus,.sb select:focus{border-color:#4CAF50}
+        .bg3{display:flex;gap:5px;flex-wrap:wrap}
+        .btn{padding:8px 15px;border:none;border-radius:20px;font-size:.76rem;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:4px;transition:.3s;white-space:nowrap}
+        .btn:hover{transform:translateY(-1px)}
+        .b-a{background:linear-gradient(135deg,#4CAF50,#388E3C);color:white}.b-e{background:linear-gradient(135deg,#217346,#185C37);color:white}
+        .b-b{background:linear-gradient(135deg,#FF9800,#F57C00);color:white}.b-r{background:linear-gradient(135deg,#9C27B0,#7B1FA2);color:white}
+        .b-p{background:linear-gradient(135deg,#607D8B,#455A64);color:white}
+        .sm{padding:3px 8px;font-size:.66rem;border-radius:12px}
+        .sv2{background:#2196F3;color:white}.se2{background:#FF9800;color:white}.sd2{background:#f44336;color:white}
+        .sc2{background:#e0e0e0;color:#555}.ss2{background:linear-gradient(135deg,#4CAF50,#388E3C);color:white}
+        .tbx{background:white;border-radius:12px;overflow:hidden;box-shadow:0 6px 22px rgba(0,0,0,.2)}
+        .tw{overflow-x:auto}
+        table{width:100%;border-collapse:collapse;min-width:1100px}
+        thead{background:linear-gradient(135deg,#0a3d1f,#1e8a5a)}
+        thead th{padding:11px 7px;color:white;text-align:left;font-size:.66rem;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+        tbody tr{border-bottom:1px solid #f0f0f0;transition:background .15s}
+        tbody tr:hover{background:#eeffee}tbody tr:nth-child(even){background:#fafafa}
+        tbody td{padding:8px 7px;font-size:.76rem;color:#333;white-space:nowrap}
+        .bdg{padding:2px 10px;border-radius:14px;font-size:.62rem;font-weight:600;text-transform:uppercase}
+        .g1{background:#e8f5e9;color:#2e7d32}.g2{background:#ffebee;color:#c62828}.g3{background:#fff3e0;color:#e65100}
+        .acts{display:flex;gap:2px}
+        .pag{display:flex;justify-content:center;padding:12px;gap:3px;flex-wrap:wrap}
+        .pag button{padding:5px 10px;border:1.5px solid #e0e0e0;background:white;border-radius:6px;cursor:pointer;font-weight:600;font-size:.72rem}
+        .pag button:hover,.pag button.act{background:#4CAF50;color:white;border-color:#4CAF50}
+        .pag button:disabled{opacity:.4;cursor:not-allowed}
+        .nd{text-align:center;padding:30px;color:#999}.nd span{font-size:2rem;display:block;margin-bottom:6px}
+        .ov{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;justify-content:center;align-items:center;backdrop-filter:blur(3px)}
+        .ov.on{display:flex}
+        .ml{background:white;border-radius:16px;width:92%;max-width:660px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.3);animation:mU .2s ease}
+        @keyframes mU{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .mh{background:linear-gradient(135deg,#0a3d1f,#1e8a5a);color:white;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:16px 16px 0 0}
+        .mh h2{font-size:1rem}
+        .cx{background:rgba(255,255,255,.2);border:none;color:white;font-size:1.1rem;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .cx:hover{background:rgba(255,255,255,.4)}
+        .mb{padding:16px}.mf{padding:8px 16px 16px;display:flex;justify-content:flex-end;gap:6px}
+        .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .fi{display:flex;flex-direction:column}.fi.fw{grid-column:1/-1}
+        .fi label{font-size:.72rem;color:#555;margin-bottom:3px;font-weight:600}.fi .rq{color:#f44336}
+        .fi input,.fi select,.fi textarea{padding:8px 10px;border:2px solid #e0e0e0;border-radius:8px;font-size:.84rem;outline:none;transition:.3s}
+        .fi input:focus,.fi select:focus,.fi textarea:focus{border-color:#4CAF50;box-shadow:0 0 0 3px rgba(76,175,80,.08)}
+        .fi textarea{resize:vertical;min-height:48px}
+        .vg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .vx{padding:9px;background:#f8f9fa;border-radius:8px;border-left:3px solid #4CAF50}
+        .vx.fw{grid-column:1/-1}
+        .vx label{font-size:.62rem;color:#888;text-transform:uppercase;letter-spacing:.3px}
+        .vx p{font-size:.82rem;color:#333;font-weight:600;margin-top:2px;word-break:break-all}
+        .toast{position:fixed;top:10px;right:10px;padding:10px 16px;border-radius:8px;color:white;font-weight:600;z-index:3000;animation:tI .3s ease;box-shadow:0 3px 10px rgba(0,0,0,.2);max-width:300px;font-size:.78rem}
+        .t-s{background:#4CAF50}.t-e{background:#f44336}.t-w{background:#FF9800}
+        @keyframes tI{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+        @media(max-width:768px){.tb2{flex-direction:column;text-align:center}.fg,.vg{grid-template-columns:1fr}.sts{flex-direction:column}.ct{flex-direction:column;align-items:stretch}.sb,.bg3{flex-direction:column}.tr2{justify-content:center}}
+        @media print{body{background:white}#loginPage,.tb2,.ct,.acts,.pag,.bg3,.sts,.btn,.sb2{display:none!important}#homePage{display:block!important}.tbx{box-shadow:none}}
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="logo">
-        <span class="logo-icon">🌾</span>
-        <h1>Farmer Database</h1>
-        <p>किसान डेटाबेस प्रबंधन प्रणाली</p>
-    </div>
-
-    <div class="card">
-        <div class="card-head">
-            <h2>🔐 Welcome!</h2>
-            <p>Login or Register to manage your farmer data</p>
-        </div>
-
-        <!-- Connection Status -->
-        <div class="conn-status conn-loading" id="connStatus">
-            🔄 Connecting to cloud database...
-        </div>
-
-        <!-- Tabs -->
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+<div class="lbox">
+    <div class="logo"><span>🌾</span><h1>Farmer Database</h1><p>किसान डेटाबेस | Firebase Cloud Powered</p></div>
+    <div class="crd">
+        <div class="ch"><h2>🔐 Welcome!</h2><p>Login or Register</p></div>
+        <div class="conn c-wait" id="connSt">🔄 Connecting to Firebase...</div>
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('login')">🔑 Login</div>
-            <div class="tab" onclick="switchTab('register')">📝 Register</div>
+            <div class="tab on" onclick="swT('login')">🔑 Login</div>
+            <div class="tab" onclick="swT('reg')">📝 Register</div>
         </div>
-
-        <div class="form-area">
-            <div class="msg" id="authMsg"></div>
-
-            <!-- LOGIN FORM -->
-            <div class="form-box active" id="loginForm">
-                <div class="ig">
-                    <label>📱 Mobile Number <span class="rq">*</span></label>
-                    <div class="iw">
-                        <span class="ic">📱</span>
-                        <input type="tel" id="loginMobile" placeholder="10-digit mobile" maxlength="10"
-                            oninput="this.value=this.value.replace(/\D/g,'')">
-                    </div>
-                </div>
-                <div class="ig">
-                    <label>🔒 Password <span class="rq">*</span></label>
-                    <div class="iw">
-                        <span class="ic">🔒</span>
-                        <input type="password" id="loginPass" placeholder="Enter password">
-                        <span class="tp" onclick="togglePass('loginPass',this)">👁️</span>
-                    </div>
-                </div>
-                <div class="rem-row">
-                    <label><input type="checkbox" id="rememberMe" checked> Remember me</label>
-                    <a href="#" onclick="forgotPass();return false;">Forgot Password?</a>
-                </div>
-                <button class="btn-auth btn-green" onclick="login()" id="loginBtn">🔑 Login</button>
-                <div class="divider"><span>New User?</span></div>
-                <button class="btn-auth btn-blue" onclick="switchTab('register')">📝 Create Account</button>
+        <div class="fa">
+            <div class="msg" id="aMsg"></div>
+            <div class="fb on" id="loginF">
+                <div class="ig"><label>📱 Mobile <span class="rq">*</span></label><div class="iw"><span class="ic">📱</span><input type="tel" id="lM" placeholder="10-digit" maxlength="10" oninput="this.value=this.value.replace(/\D/g,'')"></div></div>
+                <div class="ig"><label>🔒 Password <span class="rq">*</span></label><div class="iw"><span class="ic">🔒</span><input type="password" id="lP" placeholder="Password"><span class="tp" onclick="tP('lP',this)">👁️</span></div></div>
+                <div class="rem"><label><input type="checkbox" id="remMe" checked> Remember</label><a href="#" onclick="forgotP();return false">Forgot?</a></div>
+                <button class="ba2 bgr" onclick="doLogin()" id="lBtn">🔑 Login</button>
+                <div class="dv"><span>New?</span></div>
+                <button class="ba2 bbl" onclick="swT('reg')">📝 Create Account</button>
             </div>
-
-            <!-- REGISTER FORM -->
-            <div class="form-box" id="registerForm">
-                <div class="ig">
-                    <label>👤 Full Name <span class="rq">*</span></label>
-                    <div class="iw">
-                        <span class="ic">👤</span>
-                        <input type="text" id="regName" placeholder="Your full name">
-                    </div>
-                </div>
-                <div class="ig">
-                    <label>📱 Mobile Number <span class="rq">*</span></label>
-                    <div class="iw">
-                        <span class="ic">📱</span>
-                        <input type="tel" id="regMobile" placeholder="10-digit mobile" maxlength="10"
-                            oninput="this.value=this.value.replace(/\D/g,'')">
-                    </div>
-                    <div class="hint">📌 This will be your login ID - same number se kahi bhi login kar sakte ho</div>
-                </div>
-                <div class="ig">
-                    <label>🔒 Create Password <span class="rq">*</span></label>
-                    <div class="iw">
-                        <span class="ic">🔒</span>
-                        <input type="password" id="regPass" placeholder="Min 4 characters">
-                        <span class="tp" onclick="togglePass('regPass',this)">👁️</span>
-                    </div>
-                </div>
-                <div class="ig">
-                    <label>🔒 Confirm Password <span class="rq">*</span></label>
-                    <div class="iw">
-                        <span class="ic">🔒</span>
-                        <input type="password" id="regConfirm" placeholder="Re-enter password">
-                        <span class="tp" onclick="togglePass('regConfirm',this)">👁️</span>
-                    </div>
-                </div>
-                <div class="ig">
-                    <label>🏢 Organization / Village</label>
-                    <div class="iw">
-                        <span class="ic">🏢</span>
-                        <input type="text" id="regOrg" placeholder="Optional">
-                    </div>
-                </div>
-                <button class="btn-auth btn-green" onclick="register()" id="regBtn">📝 Create Account</button>
-                <div class="divider"><span>Already have account?</span></div>
-                <button class="btn-auth btn-blue" onclick="switchTab('login')">🔑 Login Here</button>
+            <div class="fb" id="regF">
+                <div class="ig"><label>👤 Name <span class="rq">*</span></label><div class="iw"><span class="ic">👤</span><input id="rN" placeholder="Full name"></div></div>
+                <div class="ig"><label>📱 Mobile <span class="rq">*</span></label><div class="iw"><span class="ic">📱</span><input type="tel" id="rM" placeholder="10-digit" maxlength="10" oninput="this.value=this.value.replace(/\D/g,'')"></div><div class="ht">📌 Login ID - kahi bhi login karo</div></div>
+                <div class="ig"><label>🔒 Password <span class="rq">*</span></label><div class="iw"><span class="ic">🔒</span><input type="password" id="rP" placeholder="Min 4 chars"><span class="tp" onclick="tP('rP',this)">👁️</span></div></div>
+                <div class="ig"><label>🔒 Confirm <span class="rq">*</span></label><div class="iw"><span class="ic">🔒</span><input type="password" id="rC" placeholder="Re-enter"><span class="tp" onclick="tP('rC',this)">👁️</span></div></div>
+                <button class="ba2 bgr" onclick="doReg()" id="rBtn">📝 Create Account</button>
+                <div class="dv"><span>Have account?</span></div>
+                <button class="ba2 bbl" onclick="swT('login')">🔑 Login</button>
             </div>
         </div>
+        <div class="cft">☁️ Firebase Cloud | Data safe forever | v4.0</div>
+    </div>
+</div>
+</div>
 
-        <div class="footer-info">
-            👥 Registered Users: <strong id="userCount">-</strong> |
-            ☁️ Cloud Database: <strong id="dbStatus">Connecting...</strong>
+<!-- HOME PAGE -->
+<div id="homePage">
+    <div class="tb2">
+        <div><h1>🌾 Farmer Database</h1><p id="welc"></p></div>
+        <div class="tr2">
+            <span class="sb2 sb-off" id="syncB">⏳</span>
+            <div class="ui2" id="uDsp">👤</div>
+            <button class="bo2" onclick="doOut()">🚪 Logout</button>
         </div>
     </div>
-
-    <div class="app-footer">
-        🌾 Farmer Database v3.0 | Cloud Powered | Made with ❤️ for Indian Farmers
+    <div class="sts">
+        <div class="sc c1"><div class="n" id="sT">0</div><div class="l">📊 Total</div></div>
+        <div class="sc c2"><div class="n" id="sA">0</div><div class="l">✅ Active</div></div>
+        <div class="sc c3"><div class="n" id="sI">0</div><div class="l">❌ Inactive</div></div>
+        <div class="sc c4"><div class="n" id="sP">0</div><div class="l">⏳ Pending</div></div>
     </div>
+    <div class="ct">
+        <div class="sb"><input id="src" placeholder="🔍 Search..." oninput="render()"><select id="flt" onchange="render()"><option value="all">All</option><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Pending">Pending</option></select></div>
+        <div class="bg3">
+            <button class="btn b-a" onclick="openAdd()">➕ Add</button>
+            <button class="btn b-e" onclick="expCSV()">📗 Excel</button>
+            <button class="btn b-b" onclick="bkp()">💾 Backup</button>
+            <button class="btn b-r" onclick="rst()">📥 Restore</button>
+            <button class="btn b-p" onclick="window.print()">🖨️</button>
+        </div>
+    </div>
+    <div class="tbx"><div class="tw"><table><thead><tr><th>S.No</th><th>Code</th><th>Name</th><th>Aadhar</th><th>Address</th><th>Bank</th><th>A/C</th><th>IFSC</th><th>Branch</th><th>Mobile</th><th>Status</th><th>Action</th></tr></thead><tbody id="tb"></tbody></table></div><div class="pag" id="pgn"></div></div>
+
+    <div class="ov" id="fOv"><div class="ml"><div class="mh"><h2 id="mTi">➕ Add</h2><button class="cx" onclick="cFm()">&times;</button></div><div class="mb"><input type="hidden" id="eIdx" value=""><div class="fg"><div class="fi"><label>Code <span class="rq">*</span></label><input id="f1"></div><div class="fi"><label>Name <span class="rq">*</span></label><input id="f2"></div><div class="fi"><label>Aadhar <span class="rq">*</span></label><input id="f3" maxlength="14" oninput="fmA(this)"></div><div class="fi"><label>Mobile <span class="rq">*</span></label><input id="f4" maxlength="10" oninput="this.value=this.value.replace(/\D/g,'')"></div><div class="fi fw"><label>Address <span class="rq">*</span></label><textarea id="f5"></textarea></div><div class="fi"><label>Bank <span class="rq">*</span></label><input id="f6"></div><div class="fi"><label>A/C <span class="rq">*</span></label><input id="f7"></div><div class="fi"><label>IFSC <span class="rq">*</span></label><input id="f8" style="text-transform:uppercase"></div><div class="fi"><label>Branch</label><input id="f9"></div><div class="fi"><label>Status</label><select id="f10"><option value="Active">Active</option><option value="Pending">Pending</option><option value="Inactive">Inactive</option></select></div></div></div><div class="mf"><button class="btn sc2" onclick="cFm()">Cancel</button><button class="btn ss2" onclick="saveF()">💾 Save</button></div></div></div>
+
+    <div class="ov" id="vOv"><div class="ml"><div class="mh"><h2>👁️ Details</h2><button class="cx" onclick="cVm()">&times;</button></div><div class="mb"><div class="vg" id="vCt"></div></div><div class="mf"><button class="btn sc2" onclick="cVm()">Close</button></div></div></div>
 </div>
 
 <script>
-// ========================================================
-// 🔥 FIREBASE CONFIG - APNA CONFIG YAHAN DAALO
-// ========================================================
+// ================================================================
+// 🔥 FIREBASE CONFIG - APNA CONFIG PASTE KARO
+// ================================================================
 const firebaseConfig = {
-    apiKey: "AIzaSyB0Fpv8IiqWnY0bw0fp8GcvWO090JJExXQ",
-    authDomain: "farmer-db-efd15.firebaseapp.com",
-    databaseURL: "https://farmer-db-efd15-default-rtdb.firebaseio.com",
-    projectId: "farmer-db-efd15",
-    storageBucket: "farmer-db-efd15.firebasestorage.app",
-    messagingSenderId: "634119179681",
-    appId: "1:634119179681:web:44194bd635aae04fbf0fe0",
-    measurementId: "G-ZYF3D2T96D"
+  apiKey: "AIzaSyDLrpJRQcgo9jmXP4p62uDCjEFDQhyHkTE",
+  authDomain: "farmer-database-9122d.firebaseapp.com",
+  databaseURL: "https://farmer-database-9122d-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "farmer-database-9122d",
+  storageBucket: "farmer-database-9122d.firebasestorage.app",
+  messagingSenderId: "401983756635",
+  appId: "1:401983756635:web:e7b2251da9cff9384e227e",
+  measurementId: "G-WK2G7JK4BN"
 };
-// ========================================================
-// ⬆️ Firebase Console se config copy karke upar paste karo
-// ========================================================
+// ================================================================
 
 let db = null;
-let usersRef = null;
-let isCloudConnected = false;
+let CU = null;       // Current User {mobile, name}
+let FD = [];         // Farmer Data array
+let FKEYS = {};      // Firebase keys mapping {index: firebaseKey}
+let isOnline = false;
+let farmerRef = null;
+let pg = 1;
+const PP = 10;
 
-// ============ INITIALIZE FIREBASE ============
-function initApp() {
+// ================================================================
+// 🔥 FIREBASE INIT
+// ================================================================
+function initFirebase() {
     try {
-        // Check if config is set
-        if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE") {
-            // Demo mode - use localStorage
-            console.warn('⚠️ Firebase not configured. Using localStorage demo mode.');
-            updateConnStatus('demo');
-            loadLocalCounts();
-            checkExistingSession();
+        if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
+            setConn('off');
+            toast('⚠️ Firebase config daalo!', 'w');
             return;
         }
 
-        firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(FIREBASE_CONFIG);
         db = firebase.database();
-        usersRef = db.ref('users');
 
-        // Check connection
         db.ref('.info/connected').on('value', function(snap) {
-            if (snap.val() === true) {
-                isCloudConnected = true;
-                updateConnStatus('online');
-                loadCloudCounts();
-            } else {
-                isCloudConnected = false;
-                updateConnStatus('offline');
-            }
+            isOnline = snap.val() === true;
+            setConn(isOnline ? 'on' : 'off');
         });
 
-    } catch (error) {
-        console.error('Firebase Error:', error);
-        updateConnStatus('error');
+        setConn('on');
+    } catch(e) {
+        console.error('Firebase init error:', e);
+        setConn('off');
     }
-
-    checkExistingSession();
 }
 
-function updateConnStatus(status) {
-    const el = document.getElementById('connStatus');
-    const dbEl = document.getElementById('dbStatus');
-
-    if (status === 'online') {
-        el.className = 'conn-status conn-online';
-        el.textContent = '☁️ Connected to Cloud Database ✅';
-        dbEl.textContent = 'Connected ✅';
-    } else if (status === 'offline') {
-        el.className = 'conn-status conn-offline';
-        el.textContent = '⚠️ Offline - Using local data';
-        dbEl.textContent = 'Offline ⚠️';
-    } else if (status === 'demo') {
-        el.className = 'conn-status conn-loading';
-        el.textContent = '📌 Demo Mode - Setup Firebase for cloud sync';
-        dbEl.textContent = 'Demo Mode';
+function setConn(s) {
+    const el = document.getElementById('connSt');
+    const sb = document.getElementById('syncB');
+    if (s === 'on') {
+        if(el) { el.className = 'conn c-on'; el.textContent = '☁️ Firebase Connected ✅'; }
+        if(sb) { sb.className = 'sb2 sb-on'; sb.textContent = '☁️ Synced'; }
     } else {
-        el.className = 'conn-status conn-offline';
-        el.textContent = '❌ Connection Error';
-        dbEl.textContent = 'Error ❌';
+        if(el) { el.className = 'conn c-off'; el.textContent = '❌ Firebase not connected'; }
+        if(sb) { sb.className = 'sb2 sb-off'; sb.textContent = '📴 Offline'; }
     }
 }
 
-// ============ CHECK EXISTING SESSION ============
-function checkExistingSession() {
-    const session = localStorage.getItem('currentUser');
-    if (session) {
-        window.location.href = 'home.html';
-    }
+// ================================================================
+// 🔐 AUTH - REGISTER
+// ================================================================
+async function doReg() {
+    const name = document.getElementById('rN').value.trim();
+    const mob = document.getElementById('rM').value.trim();
+    const pass = document.getElementById('rP').value;
+    const conf = document.getElementById('rC').value;
 
-    // Auto-fill remembered
-    const rem = localStorage.getItem('rememberedUser');
-    if (rem) {
-        try {
-            const d = JSON.parse(rem);
-            document.getElementById('loginMobile').value = d.mobile || '';
-        } catch(e) {}
-    }
+    if (!name) { sMsg('❌ Name required!','e'); return; }
+    if (mob.length !== 10) { sMsg('❌ 10-digit mobile!','e'); return; }
+    if (pass.length < 4) { sMsg('❌ Min 4 char password!','e'); return; }
+    if (pass !== conf) { sMsg('❌ Password not matching!','e'); return; }
 
-    // Enter key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            if (document.getElementById('loginForm').classList.contains('active')) login();
-            else register();
-        }
-    });
-}
-
-// ============ TAB SWITCH ============
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.form-box').forEach(f => f.classList.remove('active'));
-    hideMsg();
-    if (tab === 'login') {
-        document.querySelectorAll('.tab')[0].classList.add('active');
-        document.getElementById('loginForm').classList.add('active');
-    } else {
-        document.querySelectorAll('.tab')[1].classList.add('active');
-        document.getElementById('registerForm').classList.add('active');
-    }
-}
-
-// ============ TOGGLE PASSWORD ============
-function togglePass(id, el) {
-    const inp = document.getElementById(id);
-    if (inp.type === 'password') { inp.type = 'text'; el.textContent = '🙈'; }
-    else { inp.type = 'password'; el.textContent = '👁️'; }
-}
-
-// ============ MESSAGES ============
-function showMsg(text, type) {
-    const msg = document.getElementById('authMsg');
-    msg.textContent = text;
-    msg.className = 'msg show msg-' + type;
-    setTimeout(() => hideMsg(), 6000);
-}
-function hideMsg() { document.getElementById('authMsg').className = 'msg'; }
-
-// ============ COUNTS ============
-function loadCloudCounts() {
-    if (!usersRef) return;
-    usersRef.once('value').then(snap => {
-        const count = snap.numChildren();
-        document.getElementById('userCount').textContent = count;
-    });
-}
-
-function loadLocalCounts() {
-    const users = JSON.parse(localStorage.getItem('allUsers') || '{}');
-    document.getElementById('userCount').textContent = Object.keys(users).length;
-}
-
-// ======================================================
-// ============ REGISTER (CLOUD + LOCAL BOTH) ============
-// ======================================================
-async function register() {
-    const name = document.getElementById('regName').value.trim();
-    const mobile = document.getElementById('regMobile').value.trim();
-    const pass = document.getElementById('regPass').value;
-    const confirm = document.getElementById('regConfirm').value;
-    const org = document.getElementById('regOrg').value.trim();
-
-    // Validate
-    if (!name) { showMsg('❌ Name required!', 'error'); return; }
-    if (!mobile || mobile.length !== 10) { showMsg('❌ Valid 10-digit mobile required!', 'error'); return; }
-    if (!pass || pass.length < 4) { showMsg('❌ Password min 4 characters!', 'error'); return; }
-    if (pass !== confirm) { showMsg('❌ Passwords do not match!', 'error'); return; }
-
-    // Show loading
-    const btn = document.getElementById('regBtn');
-    btn.innerHTML = '<div class="spinner-sm"></div> Creating account...';
-    btn.classList.add('btn-loading');
-
-    const userData = {
-        name: name,
-        mobile: mobile,
-        password: btoa(pass),
-        org: org,
-        createdAt: new Date().toLocaleString('en-IN'),
-        lastLogin: ''
-    };
+    const btn = document.getElementById('rBtn');
+    btn.innerHTML = '<div class="spn"></div> Creating...'; btn.classList.add('bld');
 
     try {
-        if (isCloudConnected && usersRef) {
-            // ===== CLOUD SAVE =====
-            const snapshot = await usersRef.child(mobile).once('value');
-            if (snapshot.exists()) {
-                showMsg('❌ This mobile number is already registered! Please login.', 'error');
-                resetBtn(btn, '📝 Create Account');
-                return;
+        if (db && isOnline) {
+            // Check if exists on Firebase
+            const snap = await db.ref('users/' + mob).once('value');
+            if (snap.exists()) {
+                sMsg('❌ Mobile already registered! Login karein.','e');
+                rBtn2(btn, '📝 Create Account'); return;
             }
 
-            await usersRef.child(mobile).set(userData);
-            // Also create empty farmer data in cloud
-            await db.ref('farmerData/' + mobile).set({ initialized: true });
-
-            showMsg('✅ Account created on CLOUD! Login from any device now.', 'success');
-        } else {
-            // ===== LOCAL SAVE =====
-            const users = JSON.parse(localStorage.getItem('allUsers') || '{}');
-            if (users[mobile]) {
-                showMsg('❌ This mobile is already registered! Please login.', 'error');
-                resetBtn(btn, '📝 Create Account');
-                return;
-            }
-            users[mobile] = userData;
-            localStorage.setItem('allUsers', JSON.stringify(users));
-            localStorage.setItem('farmers_' + mobile, JSON.stringify([]));
-
-            showMsg('✅ Account created! Please login.', 'success');
-        }
-
-        // Also save locally for offline access
-        const localUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
-        localUsers[mobile] = userData;
-        localStorage.setItem('allUsers', JSON.stringify(localUsers));
-
-        // Switch to login
-        setTimeout(() => {
-            switchTab('login');
-            document.getElementById('loginMobile').value = mobile;
-            document.getElementById('loginPass').focus();
-            resetBtn(btn, '📝 Create Account');
-        }, 1500);
-
-        // Clear form
-        ['regName','regMobile','regPass','regConfirm','regOrg'].forEach(id => {
-            document.getElementById(id).value = '';
-        });
-
-        loadCloudCounts();
-        loadLocalCounts();
-
-    } catch (error) {
-        console.error('Register Error:', error);
-        showMsg('❌ Error: ' + error.message, 'error');
-        resetBtn(btn, '📝 Create Account');
-    }
-}
-
-// ======================================================
-// ============ LOGIN (CLOUD + LOCAL BOTH) ===============
-// ======================================================
-async function login() {
-    const mobile = document.getElementById('loginMobile').value.trim();
-    const pass = document.getElementById('loginPass').value;
-    const remember = document.getElementById('rememberMe').checked;
-
-    if (!mobile || mobile.length !== 10) { showMsg('❌ Valid 10-digit mobile required!', 'error'); return; }
-    if (!pass) { showMsg('❌ Password required!', 'error'); return; }
-
-    const btn = document.getElementById('loginBtn');
-    btn.innerHTML = '<div class="spinner-sm"></div> Checking...';
-    btn.classList.add('btn-loading');
-
-    try {
-        let user = null;
-        let farmerData = [];
-
-        if (isCloudConnected && usersRef) {
-            // ===== CLOUD LOGIN =====
-            const snapshot = await usersRef.child(mobile).once('value');
-
-            if (!snapshot.exists()) {
-                // Also check local
-                const localUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
-                if (localUsers[mobile]) {
-                    user = localUsers[mobile];
-                    showMsg('⚠️ Found in local. Syncing to cloud...', 'info');
-                    // Upload to cloud
-                    await usersRef.child(mobile).set(user);
-                } else {
-                    showMsg('❌ Mobile number not registered! Create account first.', 'error');
-                    resetBtn(btn, '🔑 Login');
-                    return;
-                }
-            } else {
-                user = snapshot.val();
-            }
-
-            // Check password
-            if (atob(user.password) !== pass) {
-                showMsg('❌ Wrong password!', 'error');
-                resetBtn(btn, '🔑 Login');
-                return;
-            }
-
-            // Update last login on cloud
-            await usersRef.child(mobile).update({
-                lastLogin: new Date().toLocaleString('en-IN')
+            // Save to Firebase
+            await db.ref('users/' + mob).set({
+                name: name, mobile: mob,
+                password: btoa(pass),
+                created: new Date().toISOString()
             });
+        }
 
-            // Download farmer data from cloud
-            const farmerSnap = await db.ref('farmerData/' + mobile + '/farmers').once('value');
-            if (farmerSnap.exists()) {
-                farmerData = [];
-                farmerSnap.forEach(child => {
-                    farmerData.push(child.val());
+        // Also save locally always
+        const lu = JSON.parse(localStorage.getItem('USERS') || '{}');
+        if (lu[mob]) { sMsg('❌ Already registered!','e'); rBtn2(btn,'📝 Create Account'); return; }
+        lu[mob] = { name, mobile: mob, password: btoa(pass), created: new Date().toISOString() };
+        localStorage.setItem('USERS', JSON.stringify(lu));
+
+        sMsg('✅ Account created! Login karein.','s');
+        document.getElementById('rN').value = '';
+        document.getElementById('rM').value = '';
+        document.getElementById('rP').value = '';
+        document.getElementById('rC').value = '';
+
+        setTimeout(() => { swT('login'); document.getElementById('lM').value = mob; document.getElementById('lP').focus(); rBtn2(btn,'📝 Create Account'); }, 1000);
+
+    } catch(e) {
+        sMsg('❌ Error: ' + e.message,'e');
+        rBtn2(btn, '📝 Create Account');
+    }
+}
+
+// ================================================================
+// 🔐 AUTH - LOGIN
+// ================================================================
+async function doLogin() {
+    const mob = document.getElementById('lM').value.trim();
+    const pass = document.getElementById('lP').value;
+
+    if (mob.length !== 10) { sMsg('❌ 10-digit mobile!','e'); return; }
+    if (!pass) { sMsg('❌ Password required!','e'); return; }
+
+    const btn = document.getElementById('lBtn');
+    btn.innerHTML = '<div class="spn"></div> Checking...'; btn.classList.add('bld');
+
+    let user = null;
+
+    try {
+        // TRY 1: Firebase se check karo
+        if (db && isOnline) {
+            const snap = await db.ref('users/' + mob).once('value');
+            if (snap.exists()) {
+                user = snap.val();
+                // Local mein bhi save karo
+                const lu = JSON.parse(localStorage.getItem('USERS') || '{}');
+                lu[mob] = user;
+                localStorage.setItem('USERS', JSON.stringify(lu));
+            }
+        }
+
+        // TRY 2: Local se check karo (fallback)
+        if (!user) {
+            const lu = JSON.parse(localStorage.getItem('USERS') || '{}');
+            user = lu[mob] || null;
+        }
+
+        if (!user) {
+            sMsg('❌ Mobile not registered! Account banayein.','e');
+            rBtn2(btn,'🔑 Login'); return;
+        }
+
+        // Password check
+        if (atob(user.password) !== pass) {
+            sMsg('❌ Wrong password!','e');
+            rBtn2(btn,'🔑 Login'); return;
+        }
+
+        // SUCCESS
+        CU = { mobile: mob, name: user.name, loginTime: new Date().toISOString() };
+        localStorage.setItem('SESSION', JSON.stringify(CU));
+
+        if (document.getElementById('remMe').checked) localStorage.setItem('REM', mob);
+        else localStorage.removeItem('REM');
+
+        sMsg('✅ Login successful!','s');
+        setTimeout(() => { rBtn2(btn,'🔑 Login'); showHome(); }, 600);
+
+    } catch(e) {
+        // Final fallback - local
+        const lu = JSON.parse(localStorage.getItem('USERS') || '{}');
+        if (lu[mob] && atob(lu[mob].password) === pass) {
+            CU = { mobile: mob, name: lu[mob].name, loginTime: new Date().toISOString() };
+            localStorage.setItem('SESSION', JSON.stringify(CU));
+            sMsg('✅ Logged in (offline)','s');
+            setTimeout(() => { rBtn2(btn,'🔑 Login'); showHome(); }, 600);
+        } else {
+            sMsg('❌ Login failed!','e');
+            rBtn2(btn,'🔑 Login');
+        }
+    }
+}
+
+// ================================================================
+// 🏠 SHOW HOME - LOAD FARMER DATA
+// ================================================================
+function showHome() {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('homePage').style.display = 'block';
+    document.getElementById('uDsp').innerHTML = '👤 <strong>' + CU.name + '</strong>';
+    document.getElementById('welc').textContent = '👤 ' + CU.name + ' | 📱 ' + CU.mobile;
+
+    loadFarmers();
+}
+
+function showLogin() {
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('homePage').style.display = 'none';
+    try { const r = localStorage.getItem('REM'); if(r) document.getElementById('lM').value = r; } catch(e) {}
+}
+
+// ================================================================
+// 📦 LOAD FARMERS - Firebase listener + Local fallback
+// ================================================================
+function loadFarmers() {
+    const localKey = 'FD_' + CU.mobile;
+
+    if (db && isOnline) {
+        // Firebase real-time listener
+        farmerRef = db.ref('farmerData/' + CU.mobile);
+
+        farmerRef.on('value', function(snapshot) {
+            FD = [];
+            FKEYS = {};
+            let idx = 0;
+
+            if (snapshot.exists()) {
+                snapshot.forEach(function(child) {
+                    const f = child.val();
+                    FKEYS[idx] = child.key;
+                    FD.push(f);
+                    idx++;
                 });
             }
 
-            // Save to local for offline
-            localStorage.setItem('farmers_' + mobile, JSON.stringify(farmerData));
+            // Always save to local as backup
+            localStorage.setItem(localKey, JSON.stringify(FD));
+            console.log('☁️ Firebase loaded: ' + FD.length + ' farmers');
 
-        } else {
-            // ===== LOCAL LOGIN =====
-            const localUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
+            setConn('on');
+            render();
+        });
 
-            if (!localUsers[mobile]) {
-                showMsg('❌ Mobile not registered! Create account first.', 'error');
-                resetBtn(btn, '🔑 Login');
-                return;
-            }
+    } else {
+        // Local fallback
+        try {
+            FD = JSON.parse(localStorage.getItem(localKey) || '[]');
+        } catch(e) { FD = []; }
 
-            user = localUsers[mobile];
-
-            if (atob(user.password) !== pass) {
-                showMsg('❌ Wrong password!', 'error');
-                resetBtn(btn, '🔑 Login');
-                return;
-            }
-
-            localUsers[mobile].lastLogin = new Date().toLocaleString('en-IN');
-            localStorage.setItem('allUsers', JSON.stringify(localUsers));
-        }
-
-        // Save also locally
-        const localUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
-        localUsers[mobile] = user;
-        localUsers[mobile].lastLogin = new Date().toLocaleString('en-IN');
-        localStorage.setItem('allUsers', JSON.stringify(localUsers));
-
-        // Save session
-        const session = {
-            mobile: mobile,
-            name: user.name,
-            org: user.org || '',
-            loginTime: new Date().toLocaleString('en-IN')
-        };
-        localStorage.setItem('currentUser', JSON.stringify(session));
-
-        // Remember me
-        if (remember) {
-            localStorage.setItem('rememberedUser', JSON.stringify({ mobile }));
-        } else {
-            localStorage.removeItem('rememberedUser');
-        }
-
-        btn.innerHTML = '✅ Login Successful!';
-        showMsg('✅ Login successful! Redirecting to dashboard...', 'success');
-
-        setTimeout(() => {
-            window.location.href = 'home.html';
-        }, 1200);
-
-    } catch (error) {
-        console.error('Login Error:', error);
-
-        // Fallback to local
-        const localUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
-        if (localUsers[mobile] && atob(localUsers[mobile].password) === pass) {
-            const session = {
-                mobile: mobile,
-                name: localUsers[mobile].name,
-                org: localUsers[mobile].org || '',
-                loginTime: new Date().toLocaleString('en-IN')
-            };
-            localStorage.setItem('currentUser', JSON.stringify(session));
-            showMsg('✅ Logged in (offline mode)', 'success');
-            setTimeout(() => { window.location.href = 'home.html'; }, 1000);
-        } else {
-            showMsg('❌ Login failed: ' + error.message, 'error');
-            resetBtn(btn, '🔑 Login');
-        }
+        console.log('💾 Local loaded: ' + FD.length + ' farmers');
+        render();
     }
 }
 
-// ============ FORGOT PASSWORD ============
-async function forgotPass() {
-    const mobile = prompt('Enter your registered mobile number:');
-    if (!mobile || mobile.length !== 10) { alert('❌ Enter valid 10-digit mobile!'); return; }
+// ================================================================
+// 💾 SAVE SINGLE FARMER TO FIREBASE
+// ================================================================
+async function saveToFirebase(farmerData, editKey) {
+    if (!db || !isOnline) return false;
 
     try {
-        let userExists = false;
+        const ref = db.ref('farmerData/' + CU.mobile);
 
-        if (isCloudConnected && usersRef) {
-            const snap = await usersRef.child(mobile).once('value');
-            userExists = snap.exists();
+        if (editKey) {
+            // UPDATE - sirf wo ek farmer update karo
+            await ref.child(editKey).set(farmerData);
+            console.log('☁️ Updated farmer: ' + editKey);
+        } else {
+            // ADD - naya farmer push karo
+            await ref.push(farmerData);
+            console.log('☁️ Added new farmer');
         }
-
-        if (!userExists) {
-            const localUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
-            userExists = !!localUsers[mobile];
-        }
-
-        if (!userExists) { alert('❌ Mobile number not registered!'); return; }
-
-        const newPass = prompt('Enter new password (min 4 characters):');
-        if (!newPass || newPass.length < 4) { alert('❌ Min 4 characters!'); return; }
-
-        const encoded = btoa(newPass);
-
-        // Update cloud
-        if (isCloudConnected && usersRef) {
-            await usersRef.child(mobile).update({ password: encoded });
-        }
-
-        // Update local
-        const localUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
-        if (localUsers[mobile]) {
-            localUsers[mobile].password = encoded;
-            localStorage.setItem('allUsers', JSON.stringify(localUsers));
-        }
-
-        alert('✅ Password reset! Now login with new password.');
-
-    } catch (error) {
-        alert('❌ Error: ' + error.message);
+        return true;
+    } catch(e) {
+        console.error('Firebase save error:', e);
+        return false;
     }
 }
 
-// ============ HELPERS ============
-function resetBtn(btn, text) {
-    btn.innerHTML = text;
-    btn.classList.remove('btn-loading');
+// ================================================================
+// 🗑️ DELETE FROM FIREBASE
+// ================================================================
+async function deleteFromFirebase(firebaseKey) {
+    if (!db || !isOnline || !firebaseKey) return false;
+
+    try {
+        await db.ref('farmerData/' + CU.mobile + '/' + firebaseKey).remove();
+        console.log('☁️ Deleted from Firebase: ' + firebaseKey);
+        return true;
+    } catch(e) {
+        console.error('Firebase delete error:', e);
+        return false;
+    }
 }
 
-// ============ INIT ============
-window.onload = initApp;
+// ================================================================
+// CRUD OPERATIONS
+// ================================================================
+function fmA(i){let v=i.value.replace(/\D/g,'');if(v.length>12)v=v.substring(0,12);let r='';for(let x=0;x<v.length;x++){if(x>0&&x%4===0)r+='-';r+=v[x];}i.value=r;}
+
+function stats(){
+    document.getElementById('sT').textContent=FD.length;
+    document.getElementById('sA').textContent=FD.filter(f=>f.s==='Active').length;
+    document.getElementById('sI').textContent=FD.filter(f=>f.s==='Inactive').length;
+    document.getElementById('sP').textContent=FD.filter(f=>f.s==='Pending').length;
+}
+
+function render(){
+    const s=(document.getElementById('src')||{}).value||'';
+    const sl=s.toLowerCase();
+    const sf=(document.getElementById('flt')||{}).value||'all';
+
+    let F=FD.filter(f=>{
+        const ms=!sl||(f.n||'').toLowerCase().includes(sl)||(f.c||'').toLowerCase().includes(sl)||(f.a||'').includes(sl)||(f.m||'').includes(sl)||(f.b||'').toLowerCase().includes(sl)||(f.ad||'').toLowerCase().includes(sl);
+        return ms&&(sf==='all'||f.s===sf);
+    });
+
+    const tp=Math.ceil(F.length/PP)||1;
+    if(pg>tp)pg=1;
+    const st=(pg-1)*PP,pd=F.slice(st,st+PP);
+    const tb=document.getElementById('tb');
+    if(!tb)return;
+
+    if(F.length===0){
+        tb.innerHTML=`<tr><td colspan="12"><div class="nd"><span>🌾</span><p>No farmers! Click ➕ Add</p></div></td></tr>`;
+        document.getElementById('pgn').innerHTML='';stats();return;
+    }
+
+    tb.innerHTML=pd.map((f,i)=>{
+        const gi=FD.indexOf(f);
+        const bc=f.s==='Active'?'g1':f.s==='Inactive'?'g2':'g3';
+        return `<tr><td><b>${st+i+1}</b></td><td><b style="color:#0a3d1f">${f.c||''}</b></td><td>${f.n||''}</td><td>${f.a||''}</td><td title="${f.ad||''}">${(f.ad||'').length>16?(f.ad||'').substring(0,16)+'...':f.ad||''}</td><td>${f.b||''}</td><td>${f.ac||''}</td><td><code>${f.if||''}</code></td><td>${f.br||'-'}</td><td><a href="tel:${f.m}">📞${f.m||''}</a></td><td><span class="bdg ${bc}">${f.s||''}</span></td><td><div class="acts"><button class="btn sm sv2" onclick="viewF(${gi})">👁️</button><button class="btn sm se2" onclick="editF(${gi})">✏️</button><button class="btn sm sd2" onclick="delF(${gi})">🗑️</button></div></td></tr>`;
+    }).join('');
+
+    let ph='';
+    if(tp>1){ph+=`<button onclick="goP(${pg-1})" ${pg===1?'disabled':''}>◀</button>`;for(let i=1;i<=tp;i++)ph+=`<button onclick="goP(${i})" class="${i===pg?'act':''}">${i}</button>`;ph+=`<button onclick="goP(${pg+1})" ${pg===tp?'disabled':''}>▶</button>`;}
+    document.getElementById('pgn').innerHTML=ph;stats();
+}
+
+function goP(p){pg=p;render();}
+
+function openAdd(){
+    document.getElementById('mTi').textContent='➕ Add Farmer';
+    document.getElementById('eIdx').value='';
+    clrF();
+    let mx=0;FD.forEach(f=>{const n=parseInt((f.c||'').replace(/\D/g,''));if(n>mx)mx=n;});
+    document.getElementById('f1').value='FR-'+String(mx+1).padStart(3,'0');
+    document.getElementById('fOv').classList.add('on');
+}
+
+function cFm(){document.getElementById('fOv').classList.remove('on');}
+function cVm(){document.getElementById('vOv').classList.remove('on');}
+function clrF(){['f1','f2','f3','f4','f5','f6','f7','f8','f9'].forEach(id=>document.getElementById(id).value='');document.getElementById('f10').value='Active';}
+
+function valF(){
+    const r=[{id:'f1',n:'Code'},{id:'f2',n:'Name'},{id:'f3',n:'Aadhar'},{id:'f4',n:'Mobile'},{id:'f5',n:'Address'},{id:'f6',n:'Bank'},{id:'f7',n:'A/C'},{id:'f8',n:'IFSC'}];
+    for(let f of r){if(!document.getElementById(f.id).value.trim()){toast('❌ '+f.n+' required!','e');document.getElementById(f.id).focus();return false;}}
+    if(document.getElementById('f3').value.replace(/\D/g,'').length!==12){toast('❌ Aadhar: 12 digits!','e');return false;}
+    if(!/^\d{10}$/.test(document.getElementById('f4').value.trim())){toast('❌ Mobile: 10 digits!','e');return false;}
+    return true;
+}
+
+// ================================================================
+// 💾 SAVE FARMER - Firebase + Local BOTH
+// ================================================================
+async function saveF(){
+    if(!valF())return;
+
+    const d = {
+        c:document.getElementById('f1').value.trim(),
+        n:document.getElementById('f2').value.trim(),
+        a:document.getElementById('f3').value.trim(),
+        m:document.getElementById('f4').value.trim(),
+        ad:document.getElementById('f5').value.trim(),
+        b:document.getElementById('f6').value.trim(),
+        ac:document.getElementById('f7').value.trim(),
+        if:document.getElementById('f8').value.trim().toUpperCase(),
+        br:document.getElementById('f9').value.trim(),
+        s:document.getElementById('f10').value,
+        du:new Date().toISOString()
+    };
+
+    const editKey = document.getElementById('eIdx').value;
+
+    if(editKey){
+        // EDIT MODE
+        const idx = FD.findIndex((f,i) => FKEYS[i] === editKey);
+        d.da = (idx >= 0 && FD[idx]) ? (FD[idx].da || d.du) : d.du;
+
+        // Save to Firebase (update existing)
+        const saved = await saveToFirebase(d, editKey);
+
+        if(!saved){
+            // Offline fallback
+            if(idx >= 0) FD[idx] = d;
+            localStorage.setItem('FD_'+CU.mobile, JSON.stringify(FD));
+            render();
+        }
+
+        toast('✅ Updated!' + (saved ? ' ☁️' : ' 💾'),'s');
+
+    } else {
+        // ADD MODE
+        if(FD.find(f=>f.c===d.c)){toast('❌ Code exists!','e');return;}
+        d.da = d.du;
+
+        // Save to Firebase (push new)
+        const saved = await saveToFirebase(d, null);
+
+        if(!saved){
+            // Offline fallback
+            FD.push(d);
+            localStorage.setItem('FD_'+CU.mobile, JSON.stringify(FD));
+            render();
+        }
+
+        toast('✅ Added!' + (saved ? ' ☁️' : ' 💾'),'s');
+    }
+
+    cFm();
+}
+
+// VIEW
+function viewF(i){
+    const f=FD[i];if(!f)return;
+    const bc=f.s==='Active'?'g1':f.s==='Inactive'?'g2':'g3';
+    document.getElementById('vCt').innerHTML=`<div class="vx"><label>Code</label><p>${f.c}</p></div><div class="vx"><label>Name</label><p>${f.n}</p></div><div class="vx"><label>Aadhar</label><p>${f.a}</p></div><div class="vx"><label>Mobile</label><p>📞${f.m}</p></div><div class="vx fw"><label>Address</label><p>${f.ad}</p></div><div class="vx"><label>Bank</label><p>🏦${f.b}</p></div><div class="vx"><label>A/C</label><p>${f.ac}</p></div><div class="vx"><label>IFSC</label><p><code>${f.if}</code></p></div><div class="vx"><label>Branch</label><p>${f.br||'N/A'}</p></div><div class="vx"><label>Status</label><p><span class="bdg ${bc}">${f.s}</span></p></div><div class="vx"><label>Added</label><p>${f.da||'N/A'}</p></div><div class="vx"><label>Updated</label><p>${f.du||'N/A'}</p></div>`;
+    document.getElementById('vOv').classList.add('on');
+}
+
+// EDIT
+function editF(i){
+    const f=FD[i];if(!f)return;
+    document.getElementById('mTi').textContent='✏️ Edit';
+    document.getElementById('eIdx').value=FKEYS[i]||('local_'+i);
+    document.getElementById('f1').value=f.c||'';
+    document.getElementById('f2').value=f.n||'';
+    document.getElementById('f3').value=f.a||'';
+    document.getElementById('f4').value=f.m||'';
+    document.getElementById('f5').value=f.ad||'';
+    document.getElementById('f6').value=f.b||'';
+    document.getElementById('f7').value=f.ac||'';
+    document.getElementById('f8').value=f.if||'';
+    document.getElementById('f9').value=f.br||'';
+    document.getElementById('f10').value=f.s||'Active';
+    document.getElementById('fOv').classList.add('on');
+}
+
+// DELETE
+async function delF(i){
+    if(!confirm('⚠️ Delete "'+FD[i].n+'" ('+FD[i].c+')?\n\n💡 Tip: Pehle Backup le lo!'))return;
+
+    const firebaseKey = FKEYS[i];
+
+    if(firebaseKey && db && isOnline){
+        await deleteFromFirebase(firebaseKey);
+        // Firebase listener auto update karega
+        toast('🗑️ Deleted from cloud!','s');
+    } else {
+        FD.splice(i,1);
+        localStorage.setItem('FD_'+CU.mobile, JSON.stringify(FD));
+        render();
+        toast('🗑️ Deleted (local)!','s');
+    }
+}
+
+// ================================================================
+// EXPORT / BACKUP / RESTORE
+// ================================================================
+function expCSV(){
+    if(!FD.length){toast('❌ No data!','e');return;}
+    const h=['S.No','Code','Name','Aadhar','Address','Bank','A/C','IFSC','Branch','Mobile','Status','Added','Updated'];
+    let csv='\uFEFF'+h.join(',')+'\n';
+    FD.forEach((f,i)=>{csv+=[i+1,q(f.c),q(f.n),q(f.a),q(f.ad),q(f.b),q(f.ac),q(f.if),q(f.br),q(f.m),q(f.s),q(f.da),q(f.du)].join(',')+'\n';});
+    dlFile(csv,'Farmers_'+CU.name+'_'+gDt()+'.csv','text/csv;charset=utf-8');
+    toast('📗 Excel exported!','s');
+}
+
+function bkp(){
+    if(!FD.length){toast('❌ No data!','e');return;}
+    dlFile(JSON.stringify({user:CU.name,mobile:CU.mobile,date:new Date().toLocaleString('en-IN'),count:FD.length,data:FD},null,2),'Backup_'+CU.name+'_'+gDt()+'.json','application/json');
+    toast('💾 Backup saved!','s');
+}
+
+function rst(){
+    const inp=document.createElement('input');inp.type='file';inp.accept='.json';
+    inp.onchange=async function(e){
+        const file=e.target.files[0];if(!file)return;
+        const reader=new FileReader();
+        reader.onload=async function(ev){
+            try{
+                const d=JSON.parse(ev.target.result);
+                if(d.data&&Array.isArray(d.data)){
+                    if(!confirm('⚠️ Add '+d.data.length+' farmers from backup?\n\n(Existing data SAFE rahega - sirf add hoga)'))return;
+
+                    let added=0;
+                    for(const farmer of d.data){
+                        // DUPLICATE CHECK - sirf naye add karo
+                        if(!FD.find(f=>f.c===farmer.c)){
+                            const saved = await saveToFirebase(farmer, null);
+                            if(!saved){
+                                FD.push(farmer);
+                            }
+                            added++;
+                        }
+                    }
+
+                    if(!db||!isOnline){
+                        localStorage.setItem('FD_'+CU.mobile,JSON.stringify(FD));
+                        render();
+                    }
+
+                    toast('✅ '+added+' new farmers added!','s');
+                }
+            }catch(er){toast('❌ Error!','e');}
+        };reader.readAsText(file);
+    };inp.click();
+}
+
+function q(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}
+function gDt(){return new Date().toISOString().slice(0,10);}
+function dlFile(c,n,t){const b=new Blob([c],{type:t}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);}
+
+// ================================================================
+// LOGOUT
+// ================================================================
+function doOut(){
+    if(!confirm('🚪 Logout?\n\n✅ Data cloud mein safe hai!'))return;
+
+    // Save local backup before logout
+    if(CU && FD.length > 0){
+        localStorage.setItem('FD_'+CU.mobile, JSON.stringify(FD));
+    }
+
+    // Detach Firebase listener
+    if(farmerRef) farmerRef.off();
+
+    localStorage.removeItem('SESSION');
+    CU=null; FD=[]; FKEYS={};
+    showLogin();
+}
+
+// ================================================================
+// FORGOT PASSWORD
+// ================================================================
+async function forgotP(){
+    const mob=prompt('Registered mobile number:');
+    if(!mob||mob.length!==10){alert('❌ 10-digit mobile!');return;}
+
+    let found=false;
+
+    if(db&&isOnline){
+        const snap=await db.ref('users/'+mob).once('value');
+        if(snap.exists())found=true;
+    }
+    if(!found){
+        const lu=JSON.parse(localStorage.getItem('USERS')||'{}');
+        if(lu[mob])found=true;
+    }
+    if(!found){alert('❌ Not registered!');return;}
+
+    const np=prompt('New password (min 4):');
+    if(!np||np.length<4){alert('❌ Min 4 chars!');return;}
+
+    if(db&&isOnline) await db.ref('users/'+mob+'/password').set(btoa(np));
+    const lu=JSON.parse(localStorage.getItem('USERS')||'{}');
+    if(lu[mob]){lu[mob].password=btoa(np);localStorage.setItem('USERS',JSON.stringify(lu));}
+    alert('✅ Password reset!');
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function swT(t){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.fb').forEach(x=>x.classList.remove('on'));
+    hMsg();
+    if(t==='login'){document.querySelectorAll('.tab')[0].classList.add('on');document.getElementById('loginF').classList.add('on');}
+    else{document.querySelectorAll('.tab')[1].classList.add('on');document.getElementById('regF').classList.add('on');}
+}
+function tP(id,el){const i=document.getElementById(id);if(i.type==='password'){i.type='text';el.textContent='🙈';}else{i.type='password';el.textContent='👁️';}}
+function sMsg(t,tp){const m=document.getElementById('aMsg');m.textContent=t;m.className='msg show msg-'+tp;setTimeout(hMsg,5000);}
+function hMsg(){const m=document.getElementById('aMsg');if(m)m.className='msg';}
+function rBtn2(b,t){b.innerHTML=t;b.classList.remove('bld');}
+function toast(m,t){const e=document.createElement('div');e.className='toast t-'+t;e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3000);}
+
+// Modal close
+document.addEventListener('click',function(e){
+    if(e.target.id==='fOv')cFm();
+    if(e.target.id==='vOv')cVm();
+});
+document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){cFm();cVm();}
+    if(e.key==='Enter'){
+        const lp=document.getElementById('loginPage');
+        if(lp&&lp.style.display!=='none'){
+            if(document.getElementById('loginF').classList.contains('on'))doLogin();
+            else doReg();
+        }
+    }
+});
+
+// ================================================================
+// 🚀 INIT - APP START
+// ================================================================
+function startApp(){
+    initFirebase();
+
+    // Check existing session
+    try{
+        const session = localStorage.getItem('SESSION');
+        if(session){
+            CU = JSON.parse(session);
+            showHome();
+            return;
+        }
+    }catch(e){}
+
+    showLogin();
+}
+
+startApp();
 </script>
 </body>
 </html>
